@@ -1,0 +1,42 @@
+{
+	"manifest_version": 2,
+
+	"name": "Store Bought",
+	"description": "Store Bought",
+	"version": "0.0",
+
+	"browser_specific_settings": {
+		"gecko": {
+			"id": "@storebought"
+		}
+	},
+
+	"icons": {
+		"64": "images/icon.png"
+	},
+
+	"permissions": [
+		"*://*.safeway.com/*",
+		"*://*.kingsoopers.com/*",
+		"*://*.wholefoodsmarket.com/*",
+		"*://images.albertsons-media.com/*",
+		"*://www.kroger.com/product/images/*",
+		"*://m.media-amazon.com/images/*",
+		"webRequest",
+		"webRequestBlocking",
+		"tabs",
+		"scripting",
+		"cookies",
+		"nativeMessaging"
+	],
+
+	"background": {
+		"scripts": ["background.js"],
+		"type": "module"
+	},
+	
+	"browser_action": {
+		"default_icon": "images/icon.png",
+		"default_title": "Store Bought"
+	}
+}

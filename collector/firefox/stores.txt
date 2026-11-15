@@ -1,0 +1,5 @@
+safeway, 80304, 1615
+safeway, 80306, 2911
+kingsoopers, 80304, 62000061
+wholefoods, 80304, 10423
+wholefoods, 80301, 10083

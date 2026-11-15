@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+
+# SQLite sidecar files (the main .sqlite IS committed; these are transient)
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite-journal
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

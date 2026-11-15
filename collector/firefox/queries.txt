@@ -1,0 +1,55 @@
+meat
+vegetable
+fruit
+snack
+bread
+frozen
+
+# vices
+coffee
+oatmilk
+juice
+
+# 7 layer dip
+cheese
+tortilla
+salsa
+avocado
+rice
+beans
+yogurt
+lettuce
+
+# shakshuka
+tomato
+bell pepper
+# tomato paste
+hominy
+
+# curry
+onion
+carrot
+potato
+curry
+chicken
+
+# protein
+pork
+fish
+tofu
+turkey
+
+# spaghet
+pasta
+mushroom
+beef
+
+# misc
+cucumber
+pizza
+dumpling
+medicine
+healthy
+canned
+candy
+taco
