@@ -1,0 +1,18 @@
+# Keep the image small: only app/, data/, wsgi.py and requirements.txt ship.
+.git
+.gitignore
+.dockerignore
+Dockerfile
+render.yaml
+README.md
+docs/
+scripts/
+collector/
+**/__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.sqlite-wal
+*.sqlite-shm
+.DS_Store

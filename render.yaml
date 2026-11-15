@@ -1,0 +1,11 @@
+# Render Blueprint (https://render.com/docs/blueprint-spec).
+# In the Render dashboard: New > Blueprint, point it at this repo, and Render
+# builds the Dockerfile and wires up the health check below. $PORT is provided
+# by Render automatically and consumed by the Dockerfile's start command.
+services:
+  - type: web
+    name: store-bought
+    runtime: docker
+    plan: free
+    healthCheckPath: /healthz
+    autoDeploy: true
