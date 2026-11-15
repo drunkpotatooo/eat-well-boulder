@@ -6,16 +6,63 @@ Thin view layer: each handler validates its inputs, calls into
 
 from __future__ import annotations
 
-from flask import Blueprint, Response, jsonify, render_template, request
+import gzip
+import os
+
+from flask import (
+    Blueprint,
+    Response,
+    current_app,
+    jsonify,
+    render_template,
+    request,
+    send_file,
+)
 
 from . import images, products
 
 bp = Blueprint("main", __name__)
 
 
+# Gzipped copy of the demo page, rebuilt whenever the file on disk changes.
+_demo_gzip: dict[str, object] = {"key": None, "body": b""}
+
+
+def _demo_gzipped(path: str) -> bytes:
+    """Return the demo page gzipped, recompressing only when the file changes."""
+    stat = os.stat(path)
+    key = (path, stat.st_mtime_ns, stat.st_size)
+    if _demo_gzip["key"] != key:
+        with open(path, "rb") as fh:
+            _demo_gzip["body"] = gzip.compress(fh.read(), compresslevel=6)
+        _demo_gzip["key"] = key
+    return _demo_gzip["body"]  # type: ignore[return-value]
+
+
 @bp.route("/")
+def home() -> Response | str:
+    """Serve the full Eat Well Boulder page, or the price browser without it.
+
+    The page is one self-contained HTML file (``DEMO_PAGE``). The file is
+    checked on every request, so replacing it updates the site at once. It is
+    several megabytes, so browsers that accept gzip get a compressed copy.
+    """
+    demo = current_app.config["DEMO_PAGE"]
+    if not os.path.isfile(demo):
+        return render_template("search.html")
+    if "gzip" in request.headers.get("Accept-Encoding", ""):
+        resp = Response(_demo_gzipped(demo), mimetype="text/html")
+        resp.headers["Content-Encoding"] = "gzip"
+    else:
+        resp = send_file(demo, mimetype="text/html")
+    resp.headers["Vary"] = "Accept-Encoding"
+    resp.headers["Cache-Control"] = "no-cache"
+    return resp
+
+
+@bp.route("/browse")
 def search_page() -> str:
-    """Render the single-page search UI."""
+    """Render the plain price browser backed by the live database."""
     return render_template("search.html")
 
 

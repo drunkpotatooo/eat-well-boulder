@@ -22,6 +22,9 @@ class Config:
             opens a fresh connection per request, so whatever this file
             contains at request time is what the user sees.
         SEARCH_LIMIT: Maximum number of rows returned by a single search.
+        DEMO_PAGE: Path to the full Eat Well Boulder page. When this file
+            exists it is served at ``/``; the plain price browser stays at
+            ``/browse``. When it is missing, ``/`` falls back to the browser.
         JSON_SORT_KEYS: Kept ``False`` so JSON responses preserve insertion
             order, which keeps payloads stable and diff-friendly.
     """
@@ -33,5 +36,9 @@ class Config:
     )
 
     SEARCH_LIMIT: int = int(os.environ.get("SEARCH_LIMIT", "200"))
+
+    DEMO_PAGE: str = os.environ.get(
+        "DEMO_PAGE", str(BASE_DIR / "app" / "demo" / "index.html")
+    )
 
     JSON_SORT_KEYS: bool = False

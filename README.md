@@ -19,7 +19,12 @@ browser extension and tools that *collect* the prices live under
   queries, and closes it. Nothing is cached in memory, so the page always
   reflects the **current contents of the database file** — drop in a newer
   database and the next request serves it.
-- **Two JSON endpoints** back a single-page UI: `/api/search` (search by name,
+- **Two pages.** `/` serves the full Eat Well Boulder site (basket, ratings,
+  nutrition, diet filters, meal planner) from one self-contained file,
+  `app/demo/index.html`, which carries its own hand-matched price snapshot.
+  `/browse` is the plain price browser over the live SQLite database. Install
+  a new copy of the site with `python -I scripts/prepare_demo.py page.html`.
+- **Two JSON endpoints** back the price browser: `/api/search` (search by name,
   filter by unit, order by price-per-unit or recency) and `/api/history`
   (a product's full price and detail timeline).
 - **Offline images.** Products are shown with generated SVG placeholders served
