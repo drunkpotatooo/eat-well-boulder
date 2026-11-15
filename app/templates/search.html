@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}Search{% endblock %}
+{% block main %}
+<div id="controls">
+	<input id="q" type="search" placeholder="Search" autofocus>
+	<select id="q-unit">
+		<option value="none">Unit</option>
+		<option value="lb">lb</option>
+		<option value="gal">gal</option>
+		<option value="ea">ea</option>
+	</select>
+	<select id="q-order">
+		<option value="price_per">Price Per</option>
+		<option value="time">Time</option>
+	</select>
+	<button id="q-refresher">Autorefresh</button>
+</div>
+<section id="results-section">
+	<h2 id="results-heading">Results</h2>
+	<div id="results" class="cards"></div>
+</section>
+{% endblock %}
+{% block script %}<script type="module" src="{{ url_for('static', filename='search.js') }}"></script>{% endblock %}

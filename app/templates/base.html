@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>{% block title %}{% endblock %} - Store Bought</title>
+		<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+	</head>
+	<body>
+		{% block main %}{% endblock %}
+		<div id="overlay" hidden>
+			<div id="overlay-panel" role="dialog" aria-modal="true">
+			</div>
+		</div>
+		{% block script %}{% endblock %}
+	</body>
+</html>
