@@ -37,4 +37,18 @@ def create_app(config: type[Config] = Config) -> Flask:
 
     app.register_blueprint(bp)
 
+    @app.after_request
+    def _security_headers(resp):
+        """Attach conservative security and privacy headers to every response.
+
+        The site is public, but the scraped price data is not meant to be
+        framed on other sites, sniffed into a different content type, leaked
+        through the ``Referer`` header, or indexed in bulk by crawlers.
+        """
+        resp.headers.setdefault("X-Content-Type-Options", "nosniff")
+        resp.headers.setdefault("X-Frame-Options", "SAMEORIGIN")
+        resp.headers.setdefault("Referrer-Policy", "no-referrer")
+        resp.headers.setdefault("X-Robots-Tag", "noindex, nofollow")
+        return resp
+
     return app

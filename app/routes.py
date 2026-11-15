@@ -63,6 +63,16 @@ def product_image(product_id: int) -> Response:
     return resp
 
 
+@bp.route("/robots.txt")
+def robots() -> Response:
+    """Ask crawlers not to index the site.
+
+    The site is public so people can look up prices, but the underlying
+    scraped dataset should not be indexed or mirrored in bulk.
+    """
+    return Response("User-agent: *\nDisallow: /\n", mimetype="text/plain")
+
+
 @bp.route("/healthz")
 def healthz() -> Response:
     """Liveness probe for hosting platforms (Render, Koyeb, ...)."""
