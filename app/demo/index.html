@@ -4138,15 +4138,17 @@ function cheaper(l){const cur=rows[l.r];if(!cur.u)return null;
 function commit(next,msg){history.push(lines.map(l=>({...l})));if(history.length>40)history.shift();lines=next;save();renderAll();if(msg)toast(msg,true);}
 function addRow(ri){
   const r=rows[ri];if(!r||r.f<0)return;
-  const cur=lines.find(l=>l.f===r.f), food=FOODS[r.f];
-  if(cur&&cur.r===ri)return;
-  if(window.EWB_ALG&&EWB_ALG.overBudget&&EWB_ALG.overBudget(r.p*(cur?cur.q:1)-(cur?rows[cur.r].p*cur.q:0),lines))return;
-  if(cur){commit(lines.map(l=>l.f===r.f?{f:r.f,r:ri,q:l.q}:l),`Swapped your ${food.name.toLowerCase()} for ${shortName(r.n)}.`);}
-  else commit(lines.concat({f:r.f,r:ri,q:1}),`Added ${food.name.toLowerCase()} to your basket.`);
+  const cur=lines.find(l=>l.r===ri), food=FOODS[r.f];
+  if(cur)return;
+  if(window.EWB_ALG&&EWB_ALG.overBudget&&EWB_ALG.overBudget(r.p,lines))return;
+  const other=lines.some(l=>l.f===r.f);
+  commit(lines.concat({f:r.f,r:ri,q:1}),other?`Added ${shortName(r.n)} as another ${food.name.toLowerCase()} product.`:`Added ${food.name.toLowerCase()} to your basket.`);
 }
-function setQty(fi,q){const l=lines.find(x=>x.f===fi);if(!l)return;if(q<1)return removeFood(fi);q=Math.min(99,q);if(q===l.q)return;
+function swapLine(oldRi,newRi){const r=rows[newRi];if(!r)return;const next=lines.filter(l=>l.r!==newRi).map(l=>l.r===oldRi?{f:r.f,r:newRi,q:l.q}:l);commit(next,`Swapped to ${shortName(r.n)}.`);}
+function setQty(ri,q){const l=lines.find(x=>x.r===ri);if(!l)return;if(q<1)return removeLine(ri);q=Math.min(99,q);if(q===l.q)return;
   if(q>l.q&&window.EWB_ALG&&EWB_ALG.overBudget&&EWB_ALG.overBudget((q-l.q)*rows[l.r].p,lines)){renderAll();return;}
-  history.push(lines.map(x=>({...x})));if(history.length>40)history.shift();lines=lines.map(x=>x.f===fi?{...x,q}:x);save();renderAll();}
+  history.push(lines.map(x=>({...x})));if(history.length>40)history.shift();lines=lines.map(x=>x.r===ri?{...x,q}:x);save();renderAll();}
+function removeLine(ri){const r=rows[ri];commit(lines.filter(l=>l.r!==ri),`Removed ${shortName(r.n)} from your basket.`);}
 function useCheaper(){const sw=lines.map(l=>({l,c:cheaper(l)})).filter(x=>x.c&&x.c.r.p<=rows[x.l.r].p+0.005);if(!sw.length)return;const tot=sw.reduce((a,x)=>a+x.c.save,0);
   commit(lines.map(l=>{const x=sw.find(y=>y.l===l);return x?{...l,r:x.c.r.i}:l;}),`Switched ${sw.length} ${sw.length===1?'food':'foods'} to cheaper picks, about ${money(tot)} less for the same amount of food.`);}
 function removeFood(fi){const food=FOODS[fi];commit(lines.filter(l=>l.f!==fi),`Removed ${food.name.toLowerCase()} from your basket.`);}
@@ -4219,16 +4221,16 @@ function chips(){const box=$('#food-chips');const sl=box.scrollLeft;box.textCont
     if(lines.some(l=>l.f===i)){const d=el('span','in','✓');d.title='In your basket';b.append(d);b.classList.add('has');}
     if(window.EWB_ALG&&EWB_ALG.foodOff(i)){b.classList.add('alg-off');b.title=EWB_ALG.foodOff(i);}
     b.addEventListener('click',()=>{const sl=box.scrollLeft;foodFilter=foodFilter===i?-1:i;q.value='';runSearch();box.scrollLeft=sl;});box.append(b);});}
-function stepper(fi,qty,small){const w=el('div','qty'+(small?' sm':''));
+function stepper(ri,qty,small){const fi=rows[ri].f;const w=el('div','qty'+(small?' sm':''));
   const m=el('button','qb');m.type='button';m.innerHTML=qty<=1?'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>':'&minus;';m.setAttribute('aria-label',qty<=1?'Remove '+FOODS[fi].name:'One fewer');
-  m.addEventListener('click',()=>setQty(fi,qty-1));
+  m.addEventListener('click',()=>setQty(ri,qty-1));
   const v=el('input','qv');v.type='number';v.min=1;v.max=99;v.value=qty;v.inputMode='numeric';v.setAttribute('aria-label','Number of packages of '+FOODS[fi].name);
-  v.addEventListener('change',()=>{const n=parseInt(v.value,10);setQty(fi,isNaN(n)?1:n);});
-  const p=el('button','qb');p.type='button';p.innerHTML='+';p.setAttribute('aria-label','One more');p.disabled=qty>=99;p.addEventListener('click',()=>setQty(fi,qty+1));
+  v.addEventListener('change',()=>{const n=parseInt(v.value,10);setQty(ri,isNaN(n)?1:n);});
+  const p=el('button','qb');p.type='button';p.innerHTML='+';p.setAttribute('aria-label','One more');p.disabled=qty>=99;p.addEventListener('click',()=>setQty(ri,qty+1));
   w.append(m,v,p);return w;}
 function card(r){
-  const c=el('article','card'),b=D.brands[r.s];c.dataset.i=r.i;const food=r.f>=0?FOODS[r.f]:null;const cur=food&&lines.find(l=>l.f===r.f);
-  const mine=cur&&cur.r===r.i;if(mine)c.classList.add('mine');
+  const c=el('article','card'),b=D.brands[r.s];c.dataset.i=r.i;const food=r.f>=0?FOODS[r.f]:null;const cur=food&&lines.find(l=>l.r===r.i);
+  const mine=!!cur;if(mine)c.classList.add('mine');
   const th=el('div','thumb');th.style.background=tint(r.f);th.append(ico(r.f,'te'));
   const badges=el('div','badges');
   if(food&&r.u&&NOW-r.t<OLD&&bestPP[r.f+'|'+r.u]===r.pp)badges.append(el('span','bdg best','Best price per '+r.u));
@@ -4244,10 +4246,8 @@ function card(r){
   const line=el('div','price-line');line.append(el('span','price',money(r.p)));
   const per=el('span','per');if(r.u){per.append(el('b','',money(r.pp)),document.createTextNode(' / '+r.u));}line.append(per);body.append(line);
   if(!food){const btn=el('button','add');btn.type='button';btn.disabled=true;btn.textContent='Not in our food list';btn.title='Only foods we have nutrition and price data for can go in the basket.';body.append(btn);}
-  else if(mine){body.append(stepper(r.f,cur.q));}
-  else{const btn=el('button','add');btn.type='button';
-    if(cur){btn.classList.add('swap');btn.textContent='Swap for this';btn.setAttribute('aria-label','Use this product as your '+food.name.toLowerCase());}
-    else{btn.innerHTML='<span aria-hidden="true">+</span> Add';btn.setAttribute('aria-label','Add '+r.n+' to basket');}
+  else if(mine){body.append(stepper(cur.r,cur.q));}
+  else{const btn=el('button','add');btn.innerHTML='<span aria-hidden="true">+</span> Add';btn.type='button';btn.setAttribute('aria-label','Add '+r.n+' to basket');
     btn.addEventListener('click',()=>addRow(r.i));body.append(btn);}
   c.append(body);return c;}
 function age(time){const s=Math.max(0,Math.floor(Date.now()/1000)-time);
@@ -4344,8 +4344,8 @@ function renderCart(){
     if(window.EWB_ALG){const w=EWB_ALG.why(r);if(w)mid.append(el('div','calg','⚠ '+w+'. Doesn’t fit your diet or allergy settings.'));}
     const ch=cheaper(l);
     if(ch){const tip=el('div','ctip');tip.append(el('span','',`${ch.pct}% less per ${r.u}: ${shortName(ch.r.n)} (${D.brands[ch.r.s]})`));
-      const b=el('button','clink','Swap');b.type='button';b.setAttribute('aria-label','Swap to '+ch.r.n);b.addEventListener('click',()=>addRow(ch.r.i));tip.append(b);mid.append(tip);}
-    const act=el('div','cact');act.append(stepper(l.f,l.q,true));
+      const b=el('button','clink','Swap');b.type='button';b.setAttribute('aria-label','Swap to '+ch.r.n);b.addEventListener('click',()=>swapLine(l.r,ch.r.i));tip.append(b);mid.append(tip);}
+    const act=el('div','cact');act.append(stepper(l.r,l.q,true));
     const chg=el('button','clink','Change');chg.type='button';chg.setAttribute('aria-label','See other '+f.name.toLowerCase()+' products');
     chg.addEventListener('click',()=>{foodFilter=l.f;q.value='';closeDrawer();runSearch();$('#shop-search').scrollIntoView({behavior:reduce?'auto':'smooth',block:'start'});});
     act.append(chg);mid.append(act);li.append(mid);list.append(li);});
@@ -4388,7 +4388,7 @@ function benRecord(food){
 }
 let syncing=false;
 function buildResults(){
-  const foods=lines.map(l=>FOODS[l.f]);
+  const foods=[...new Set(lines.map(l=>l.f))].map(fi=>FOODS[fi]);
   const rated=foods.filter(f=>f.luke), unrated=foods.filter(f=>!f.luke);
   $('#res-sub').textContent=`${foods.length} ${foods.length===1?'food':'foods'} in your basket. Ratings come first, then what the basket gives you, then where each food is cheaper.`;
   // ratings + nutrition (Luke)
@@ -4426,7 +4426,7 @@ YourBasket.onChange=(kind,lukeId)=>{ // "Filling the gaps" in the nutrition sect
   if(syncing)return;const fi=FOODS.findIndex(f=>f.luke===lukeId);if(fi<0)return;
   if(kind==='add'&&!lines.some(l=>l.f===fi)){history.push(lines.map(l=>({...l})));lines=lines.concat({f:fi,r:FOODS[fi].def,q:1});}
   if(kind==='remove'){history.push(lines.map(l=>({...l})));lines=lines.filter(l=>l.f!==fi);}
-  save();renderCart();chips();const foods=lines.map(l=>FOODS[l.f]);CostChart.setFoods(foods.map(benRecord).filter(Boolean));
+  save();renderCart();chips();const foods=[...new Set(lines.map(l=>l.f))].map(fi=>FOODS[fi]);CostChart.setFoods(foods.map(benRecord).filter(Boolean));
   $('#res-chips').replaceChildren(...foods.map(f=>{const c=el('span','rchip');c.append(ico(FOODS.indexOf(f),'rci'),document.createTextNode(f.name));return c;}));
   $('#res-sub').textContent=`${foods.length} foods in your basket. Ratings come first, then what the basket gives you, then where each food is cheaper.`;
   summary(foods.map(benRecord).filter(Boolean));
