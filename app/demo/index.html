@@ -5430,9 +5430,11 @@ function drawCap(){if(!capEl)return;const c=cap(),tot=I.lines.reduce((a,l)=>a+ro
 
 /* ---------------- keep every part in step ---------------- */
 
+if((E.view==='home'||E.view==='shop')&&!ls.get('ewb-intro'))setTimeout(()=>{if((E.view==='home'||E.view==='shop')&&!ls.get('ewb-intro')){if(E.view==='shop')ls.set('ewb-tip-shop','1');openTour(true);}},700);
 addEventListener('ewb:view',e=>{const v=e.detail;
-  if(v!=='shop'&&v!=='home'&&tour&&!tour.hidden){tour.classList.remove('on');ls.set('ewb-tour','1');setTimeout(()=>{tour.hidden=true;},250);}
-  if(v==='shop'){I.refresh();drawPanel();if(!ls.get('ewb-tour'))setTimeout(()=>{if(E.view==='shop'&&!ls.get('ewb-tour')){ls.set('ewb-tip-shop','1');openTour(true);}},500);}
+  if(v!=='shop'&&v!=='home'&&tour&&!tour.hidden){tour.classList.remove('on');ls.set('ewb-intro','1');setTimeout(()=>{tour.hidden=true;},250);}
+  if(v==='shop'){I.refresh();drawPanel();if(!ls.get('ewb-intro'))setTimeout(()=>{if(E.view==='shop'&&!ls.get('ewb-intro')){ls.set('ewb-tip-shop','1');openTour(true);}},500);}
+  if(v==='home'&&!ls.get('ewb-intro'))setTimeout(()=>{if(E.view==='home'&&!ls.get('ewb-intro'))openTour(true);},700);
   if(v==='plan'&&planDirty){planDirty=false;I.changed();}
   if(v==='results')setTimeout(()=>{try{window.YourBasket&&YourBasket.redrawChips&&YourBasket.redrawChips();}catch(err){}},0);
   tip(v);});
@@ -5558,7 +5560,7 @@ function openTour(focus){if(!tour){tour=mk('div','tour');tour.setAttribute('role
   const h=mk('h2','','How it works');h.id='tour-h';const ol=mk('ol');STEPS.forEach(([a,b])=>{const li=mk('li');li.append(mk('b','',a),mk('span','',b));ol.append(li);});
   const ok=mk('button','ap-btn','Got it');ok.type='button';const go=mk('button','ap-link','Start shopping');go.type='button';const cta=mk('div','tour-cta');cta.append(ok,go);
   tour.append(x,h,ol,cta);document.body.append(tour);
-  const close=()=>{tour.classList.remove('on');ls.set('ewb-tour','1');setTimeout(()=>{tour.hidden=true;},250);};
+  const close=()=>{tour.classList.remove('on');ls.set('ewb-intro','1');setTimeout(()=>{tour.hidden=true;},250);};
   x.addEventListener('click',close);ok.addEventListener('click',close);go.addEventListener('click',()=>{close();E.show('shop','#shop-title');});
   tour.addEventListener('keydown',e=>{if(e.key==='Escape')close();});}
   $('.tour-cta .ap-link',tour).hidden=E.view==='shop';tour.hidden=false;requestAnimationFrame(()=>tour.classList.add('on'));if(focus)setTimeout(()=>$('.ap-btn',tour).focus(),50);}
@@ -5568,7 +5570,7 @@ function openTour(focus){if(!tour){tour=mk('div','tour');tour.setAttribute('role
 const TIPS={shop:['Step 1 of 3','Add foods to your basket, then press Check out to see how it rates. Set any diet or allergies first.'],
  results:['Step 2 of 3','Use the tabs to compare ratings, nutrition and store prices. Print your list or plan a week at the bottom.'],
  plan:['Step 3 of 3','Change the budget, people or goals and the week updates. Print the list or add it to your basket.']};
-function tip(v){const t=TIPS[v];if(!t||ls.get('ewb-tip-'+v)||(v==='shop'&&!ls.get('ewb-tour')))return;const view=$('#view-'+v);if(!view||$('.vtip',view))return;
+function tip(v){const t=TIPS[v];if(!t||ls.get('ewb-tip-'+v)||(v==='shop'&&!ls.get('ewb-intro')))return;const view=$('#view-'+v);if(!view||$('.vtip',view))return;
   const d=mk('div','vtip');d.setAttribute('role','note');d.append(mk('b','',t[0]),mk('span','',t[1]));
   const x=mk('button','vtip-x');x.type='button';x.setAttribute('aria-label','Dismiss tip');x.innerHTML='&times;';x.addEventListener('click',()=>{d.remove();ls.set('ewb-tip-'+v,'1');});d.append(x);
   const anchor=v==='shop'?$('.shop-head',view):v==='results'?$('#res-title',view):$('#plan-title',view);
